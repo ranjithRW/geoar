@@ -32,7 +32,7 @@
 
     <application
         android:label="GeoAR"
-        android:name="${applicationName}"
+        android:name="com.example.geoar.MainApplication"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"
         android:requestLegacyExternalStorage="true">

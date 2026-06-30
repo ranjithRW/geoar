@@ -26,7 +26,6 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      fontFamily: 'Inter',
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -38,7 +37,6 @@ class AppTheme {
         backgroundColor: Colors.transparent,
         foregroundColor: scheme.onSurface,
         titleTextStyle: TextStyle(
-          fontFamily: 'Inter',
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: scheme.onSurface,
@@ -51,7 +49,6 @@ class AppTheme {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           textStyle: const TextStyle(
-            fontFamily: 'Inter',
             fontWeight: FontWeight.w600,
             fontSize: 15,
           ),
@@ -77,7 +74,7 @@ class AppTheme {
           borderSide: BorderSide(color: scheme.error, width: 1),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        labelStyle: TextStyle(fontFamily: 'Inter', color: scheme.onSurfaceVariant),
+        labelStyle: TextStyle(color: scheme.onSurfaceVariant),
       ),
       chipTheme: ChipThemeData(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -94,7 +91,7 @@ class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         height: 70,
         labelTextStyle: WidgetStateProperty.all(
-          const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w500),
+          const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
         ),
         indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
