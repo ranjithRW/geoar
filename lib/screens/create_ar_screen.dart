@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import 'package:geoar/models/ar_location.dart';
 import 'package:geoar/providers/ar_locations_provider.dart';
+import 'package:geoar/services/location_service.dart';
 import 'package:geoar/services/media_service.dart';
 import 'package:geoar/themes/app_theme.dart';
 import 'package:geoar/utils/constants.dart';
@@ -41,6 +42,7 @@ class _CreateArScreenState extends State<CreateArScreen> {
   String? _videoPath;
   String? _modelPath;
   bool _isSaving = false;
+  bool _isDetectingLocation = false;
 
   bool get _isEditing => widget.location != null;
 
@@ -61,7 +63,39 @@ class _CreateArScreenState extends State<CreateArScreen> {
       _imagePath = loc.imagePath;
       _videoPath = loc.videoPath;
       _modelPath = loc.modelPath;
+    } else {
+      // Auto-detect current location for new pins.
+      WidgetsBinding.instance.addPostFrameCallback((_) => _detectCurrentLocation());
     }
+  }
+
+  Future<void> _detectCurrentLocation() async {
+    setState(() => _isDetectingLocation = true);
+    final position = await LocationService.instance.getCurrentPosition();
+    if (!mounted) return;
+    if (position != null) {
+      setState(() {
+        _latCtrl.text = position.latitude.toStringAsFixed(6);
+        _lonCtrl.text = position.longitude.toStringAsFixed(6);
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.location_off_rounded, color: Colors.white),
+              SizedBox(width: 10),
+              Text('Could not detect location. Enter coordinates manually.'),
+            ],
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
+    if (mounted) setState(() => _isDetectingLocation = false);
   }
 
   @override
@@ -478,57 +512,88 @@ class _CreateArScreenState extends State<CreateArScreen> {
       colorScheme: colorScheme,
       icon: Icons.location_on_rounded,
       title: 'GPS Coordinates',
-      subtitle: 'Required — defines where the AR pin appears',
-      child: Row(
+      subtitle: 'Auto-detected from your device — edit if needed',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: TextFormField(
-              controller: _latCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Latitude *',
-                prefixIcon: Icon(Icons.swap_vert_rounded),
-                hintText: '-90 to 90',
+          // Detect button
+          OutlinedButton.icon(
+            onPressed: _isDetectingLocation ? null : _detectCurrentLocation,
+            icon: _isDetectingLocation
+                ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colorScheme.primary,
+                    ),
+                  )
+                : const Icon(Icons.my_location_rounded, size: 18),
+            label: Text(
+              _isDetectingLocation ? 'Detecting location…' : 'Use My Current Location',
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-                signed: true,
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*')),
-              ],
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Required';
-                final n = double.tryParse(v.trim());
-                if (n == null) return 'Invalid number';
-                if (n < -90 || n > 90) return 'Must be -90 to 90';
-                return null;
-              },
+              side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.6)),
+              foregroundColor: colorScheme.primary,
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextFormField(
-              controller: _lonCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Longitude *',
-                prefixIcon: Icon(Icons.swap_horiz_rounded),
-                hintText: '-180 to 180',
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _latCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Latitude *',
+                    prefixIcon: Icon(Icons.swap_vert_rounded),
+                    hintText: '-90 to 90',
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*')),
+                  ],
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return 'Required';
+                    final n = double.tryParse(v.trim());
+                    if (n == null) return 'Invalid number';
+                    if (n < -90 || n > 90) return 'Must be -90 to 90';
+                    return null;
+                  },
+                ),
               ),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-                signed: true,
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextFormField(
+                  controller: _lonCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Longitude *',
+                    prefixIcon: Icon(Icons.swap_horiz_rounded),
+                    hintText: '-180 to 180',
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*')),
+                  ],
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return 'Required';
+                    final n = double.tryParse(v.trim());
+                    if (n == null) return 'Invalid number';
+                    if (n < -180 || n > 180) return 'Must be -180 to 180';
+                    return null;
+                  },
+                ),
               ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*')),
-              ],
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Required';
-                final n = double.tryParse(v.trim());
-                if (n == null) return 'Invalid number';
-                if (n < -180 || n > 180) return 'Must be -180 to 180';
-                return null;
-              },
-            ),
+            ],
           ),
         ],
       ),
