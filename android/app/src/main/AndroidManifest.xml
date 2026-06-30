@@ -60,7 +60,7 @@
         <!-- Google Maps API Key - replace YOUR_MAPS_API_KEY with actual key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_MAPS_API_KEY"/>
+            android:value="AIzaSyCdK0sobzZ4zHxzrdQUic7gsz2xzEXvrps"/>
 
         <!-- File provider for media sharing -->
         <provider
